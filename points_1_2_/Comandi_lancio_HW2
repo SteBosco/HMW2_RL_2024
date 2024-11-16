@@ -1,0 +1,16 @@
+1)cubic-circular
+ros2 launch iiwa_bringup iiwa.launch.py time_law:="cubic" path_type:="circular" 
+ros2 run ros2_kdl_package ros2_kdl_node --ros-args -p time_law:="cubic" -p path_type:="circular"
+
+2)trapezoidal-circular
+ros2 launch iiwa_bringup iiwa.launch.py time_law:="trapezoidal" path_type:="circular" 
+ros2 run ros2_kdl_package ros2_kdl_node --ros-args -p time_law:="trapezoidal" -p path_type:="circular"
+
+3)trapezoidal-linear
+ros2 launch iiwa_bringup iiwa.launch.py time_law:="trapezoidal" path_type:="linear" 
+ros2 run ros2_kdl_package ros2_kdl_node --ros-args -p time_law:="trapezoidal" -p path_type:="linear"
+
+
+4)cubic-linear
+ros2 launch iiwa_bringup iiwa.launch.py time_law:="cubic" path_type:="linear" 
+ros2 run ros2_kdl_package ros2_kdl_node --ros-args -p time_law:="cubic" -p path_type:="linear"
