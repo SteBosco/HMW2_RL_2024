@@ -96,6 +96,8 @@ class Iiwa_pub_sub : public rclcpp::Node
             robot_->setJntLimits(q_min,q_max);            
             joint_positions_.resize(nj);
             joint_velocities_.resize(nj);
+            torque_values.resize(nj);
+
  
             // Subscriber to jnt states
             jointSubscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -187,12 +189,13 @@ class Iiwa_pub_sub : public rclcpp::Node
                 }
             }else if(cmd_interface_ == "effort"){
                 // Create cmd publisher
+                torque_values= controller_.pd_plusgravity(joint_positions_,_Kp,_Kd);
                 cmdPublisher_ = this->create_publisher<FloatArray>("/effort_controller/commands", 10);
                 timer_ = this->create_wall_timer(std::chrono::milliseconds(100),
                                             std::bind(&Iiwa_pub_sub::cmd_publisher, this));
                 
                 for (long int i = 0; i < nj; ++i) {
-                    desired_commands_[i] = 0;
+                    desired_commands_[i] = torque_values(i);
                 }
  
             }else{
@@ -260,8 +263,10 @@ class Iiwa_pub_sub : public rclcpp::Node
                     joint_positions_.data = joint_positions_.data + joint_velocities_.data*dt;
                 }
                 else if(cmd_interface_ == "effort"){
- 
-                    torque_values= controller_.pd_plusgravity(qd,dqd,_Kp,_Kd);
+                    
+                   
+
+                    torque_values= controller_.pd_plusgravity(qd,_Kp,_Kd);
  
                 }else{
  
@@ -360,8 +365,8 @@ class Iiwa_pub_sub : public rclcpp::Node
         KDL::Frame init_cart_pose_;
          
         //Gains
-        double _Kp = 100.0;  // Example value for proportional gain
-        double _Kd = 10.0;   // Example value for derivative gain
+        double _Kp = 850.0;  // Example value for proportional gain
+        double _Kd = 50.0;   // Example value for derivative gain
     
 };
  
@@ -369,6 +374,7 @@ class Iiwa_pub_sub : public rclcpp::Node
 int main( int argc, char** argv )
 {
     rclcpp::init(argc, argv);
+
     rclcpp::spin(std::make_shared<Iiwa_pub_sub>());
     rclcpp::shutdown();
     return 1;

@@ -231,6 +231,75 @@
       <child link="${prefix}tool0"/>
       <axis xyz="0 0 0"/>
   </joint>
-
+  <!-- <transmission name="wrist_1_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a1">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_1_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+   <transmission name="wrist_2_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a2">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_2_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+   <transmission name="wrist_3_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a3">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_3_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+   <transmission name="wrist_4_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a4">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_4_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+   <transmission name="wrist_5_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a5">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_5_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+   <transmission name="wrist_6_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a6">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_6_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission>
+   <transmission name="wrist_7_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_a7">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="wrist_7_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+  </transmission> -->
   </xacro:macro>
 </robot>

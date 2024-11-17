@@ -69,6 +69,14 @@ inline Vector6d toEigen(const KDL::Twist& t)
     return e;
 }
 
+// JacobainKDLToEigen
+inline Eigen::Matrix<double,6,Eigen::Dynamic> toEigen(const KDL::Jacobian &J)
+{
+    return J.data;
+}
+
+
+
 
 inline std::vector<double> toStdVector(const Eigen::VectorXd& V)
 {

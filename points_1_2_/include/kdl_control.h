@@ -27,8 +27,9 @@ public:
                            double _Kdo);
 
     Eigen::VectorXd pd_plusgravity(KDL::JntArray &_qd,
-                                      KDL::JntArray &_dqd,
                                       double _Kp, double _Kd);
+
+
 
 private:
 
