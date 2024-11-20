@@ -231,7 +231,7 @@
       <child link="${prefix}tool0"/>
       <axis xyz="0 0 0"/>
   </joint>
-  <!-- <transmission name="wrist_1_trans">
+  <transmission name="wrist_1_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="joint_a1">
         <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
@@ -300,6 +300,6 @@
         <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
         <mechanicalReduction>1</mechanicalReduction>
       </actuator>
-  </transmission> -->
+  </transmission> 
   </xacro:macro>
 </robot>
