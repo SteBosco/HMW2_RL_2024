@@ -40,15 +40,19 @@ class Iiwa_pub_sub : public rclcpp::Node
             
             RCLCPP_INFO(get_logger(),"Current cmd interface is: '%s'", cmd_interface_.c_str());
  
-            if (!(cmd_interface_ == "position" || cmd_interface_ == "velocity" || cmd_interface_ == "effort"))
+            if (!(cmd_interface_ == "position" || "velocity" || "effort" || "effort_cartesian"))
             {
                 RCLCPP_INFO(get_logger(),"Selected cmd interface is not valid!"); return;
             }
 
-             std::cout<<"INSERISCI kp: ";
-             std::cin>>_Kpp;
-             std::cout<<"INSERISCI kd: ";
-             std::cin>>_Kdp;
+            // std::cout<<"INSERISCI kpp: ";
+            // std::cin>>_Kpp;
+            // _Kpo=_Kpp;
+             
+            // // std::cout<<"INSERISCI kd: ";
+            // // std::cin>>_Kdp;
+            // _Kdp=2*sqrt(_Kpp);
+            // _Kdo=_Kdp;
 
  
             // Parameters added in the constructor
@@ -105,6 +109,8 @@ class Iiwa_pub_sub : public rclcpp::Node
             joint_acceleration_d_.resize(nj);
             joint_velocity_old.resize(nj);
             torque_values.resize(nj);
+            q_des.resize(nj);
+            dq_des.resize(nj);
 
  
             // Subscriber to jnt states
@@ -138,11 +144,11 @@ class Iiwa_pub_sub : public rclcpp::Node
             KDLController controller_(*robot_);
  
             // EE's trajectory initial position (just an offset)
-            Eigen::Vector3d init_position(Eigen::Vector3d(init_cart_pose_.p.data) - Eigen::Vector3d(0,0,0.1));
+            Eigen::Vector3d init_position(Eigen::Vector3d(init_cart_pose_.p.data) );
  
             // EE's trajectory end position (just opposite y)
-            Eigen::Vector3d end_position; end_position << init_position[0], -init_position[1]+0.1, init_position[2];
- 
+            Eigen::Vector3d end_position; end_position << init_position[0], -init_position[1]+0.2, init_position[2];
+
             // Plan trajectory
             double traj_duration = 1.5, acc_duration = 0.5, t = 0.0, trajRadius = 0.2;
  
@@ -195,11 +201,11 @@ class Iiwa_pub_sub : public rclcpp::Node
                 for (long int i = 0; i < joint_velocities_.data.size(); ++i) {
                     desired_commands_[i] = joint_velocities_(i);
                 }
-            }else if(cmd_interface_ == "effort"){
+            }else if(cmd_interface_ == "effort" || "effort_cartesian"){
                 // Create cmd publisher
                 
                 cmdPublisher_ = this->create_publisher<FloatArray>("/effort_controller/commands", 10);
-                timer_ = this->create_wall_timer(std::chrono::milliseconds(15),
+                timer_ = this->create_wall_timer(std::chrono::milliseconds(10),
                                             std::bind(&Iiwa_pub_sub::cmd_publisher, this));
                 
                 for (long int i = 0; i < nj; ++i) {
@@ -273,7 +279,7 @@ class Iiwa_pub_sub : public rclcpp::Node
 
                     /*Combine a desired velocity p.vel with an error term for correction:
                     NOTE: The three zeros represent rotation components not considered here!*/
-                    Vector6d cartvel; cartvel << p.vel + 3*error, 0,0,0;
+                    Vector6d cartvel; cartvel << p.vel + error, 0,0,0;
                     
                     //Update joint velocities, using the pseudoinverse of the end-effector Jacobian to map the desired Cartesian velocity (cartvel) in joint space:
                     dq_des.data = pseudoinverse(robot_->getEEJacobian().data)*cartvel;
@@ -285,11 +291,13 @@ class Iiwa_pub_sub : public rclcpp::Node
                     joint_acceleration_d_.data=(joint_velocities_.data-joint_velocity_old.data)/dt;
                     
                     //Use the first method (idCntr) to calculate the required joint torques:
-                    //torque_values = controller_.idCntr(q_des,jdq_des,joint_acceleration_d_, _Kp, _Kd);                    
+                   torque_values = controller_.idCntr(q_des,dq_des,joint_acceleration_d_, _Kp, _Kd);
+                }
+                else if(cmd_interface_ == "effort_cartesian"){
                     
-                    Vector6d cartacc; cartacc << p.acc + 3*error, 0,0,0;
-
-                    desVel = KDL::Twist(KDL::Vector(p.vel[0],p.velvel[1], p.vel[2]),KDL::Vector::Zero());
+                    
+                    Vector6d cartacc; cartacc << p.acc + error/dt, 0,0,0;
+                    desVel = KDL::Twist(KDL::Vector(p.vel[0], p.vel[1], p.vel[2]),KDL::Vector::Zero());
                     desAcc = KDL::Twist(KDL::Vector(p.acc[0], p.acc[1], p.acc[2]),KDL::Vector::Zero());
                     desPos.M = desFrame.M;
                     desPos.p = desFrame.p;
@@ -297,7 +305,8 @@ class Iiwa_pub_sub : public rclcpp::Node
                     //Use the second method (idCntr) to calculate the required joint torques:
                     torque_values=controller_.idCntr(desPos,desVel,desAcc,_Kpp,_Kpo,_Kdp,_Kdo);
  
-                }else{
+                }
+                else{
  
                     std::cout<<"Error!";
                 }
@@ -317,7 +326,7 @@ class Iiwa_pub_sub : public rclcpp::Node
                         desired_commands_[i] = joint_velocities_(i);
                     }
                 }
-                else if(cmd_interface_ == "effort"){
+                else if(cmd_interface_ == "effort" || "effort_cartesian"){
                      // Send joint velocity commands
                     for (long int i = 0; i < torque_values.size(); ++i) {
                         desired_commands_[i] = torque_values(i);
@@ -336,26 +345,23 @@ class Iiwa_pub_sub : public rclcpp::Node
             else{
                 RCLCPP_INFO_ONCE(this->get_logger(), "Trajectory executed successfully ...");
                 // Send joint effort commands
-                if(cmd_interface_ == "effort"){
+                if(cmd_interface_ == "effort" || "effort_cartesian"){
                 
                     KDLController controller_(*robot_);
-                    KDL::JntArray qd;
-                    KDL::JntArray qdd;
-
+                    q_des.data=joint_positions_.data;
                     // Azzerare i valori di qd (velocità dei giunti)
-                    qd.data = Eigen::VectorXd::Zero(7,1);
+                    dq_des.data = Eigen::VectorXd::Zero(7,1);
                     // // Azzerare i valori di qdd (accelerazioni dei giunti)
-                    qdd.data = Eigen::VectorXd::Zero(7,1);
-
-                     torque_values = controller_.idCntr(joint_positions_,qd,qdd, _Kp, _Kd); 
+                    joint_acceleration_d_.data = Eigen::VectorXd::Zero(7,1);
+ 
+                    torque_values = controller_.idCntr(q_des,dq_des,joint_acceleration_d_, _Kp, _Kd);
                     
                     // // Update KDLrobot structure
-                     robot_->update(toStdVector(joint_positions_.data),toStdVector(joint_velocities_.data));  
-        
+                    robot_->update(toStdVector(joint_positions_.data),toStdVector(joint_velocities_.data));  
                     
-                for (long int i = 0; i < torque_values.size(); ++i) {
- 
-                    desired_commands_[i] = torque_values(i);
+                    for (long int i = 0; i < torque_values.size(); ++i) {
+    
+                        desired_commands_[i] = torque_values(i);
 
                     }
                 }else{
@@ -408,6 +414,8 @@ class Iiwa_pub_sub : public rclcpp::Node
         KDL::JntArray joint_acceleration_d_;
         KDL::JntArray joint_velocity_old;
         Eigen::VectorXd torque_values;
+        KDL::JntArray q_des;
+        KDL::JntArray dq_des;
         KDL::Twist desVel;
         KDL::Twist desAcc;
         KDL::Frame desPos;
@@ -423,18 +431,14 @@ class Iiwa_pub_sub : public rclcpp::Node
         std::string time_law_;
         std::string path_type_;
         KDL::Frame init_cart_pose_;
-        KDL::JntArray q_des;
-        KDL::JntArray dq_des;
-
-
          
         //Gains
-        double _Kp = 50 ;  
-        double _Kd =  10;   
-        double _Kpp ;
-        double _Kpo = 50;
-        double _Kdp ;      //2*sqrt(_Kpp);
-        double _Kdo = 50;
+        double _Kp = 170 ;  // Example value for proportional gain
+        double _Kd =  30;   // Example value for derivative gain
+        double _Kpp = 90;
+        double _Kpo = 90;
+        double _Kdp = 2*sqrt(_Kpp);
+        double _Kdo = 2*sqrt(_Kpo);
     
 };
  

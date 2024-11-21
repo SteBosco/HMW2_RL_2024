@@ -96,7 +96,7 @@ void KDLPlanner::createCircPath(KDL::Frame &_F_start,
 and returns three double variables s, s_dot and s_ddot that represent the curvilinear abscissa of your trajectory.*/
 void KDLPlanner::trapezoidal_vel(double t_, double tc_, double tf_, double &s, double &s_dot, double &s_ddot) {
   double sc_ddot;
-  sc_ddot=2/(tf_*tc_-std::pow(tc_,2));
+  sc_ddot=1/(tf_*tc_-std::pow(tc_,2));
 
   if(0 <= t_ && t_<= tc_)
   {

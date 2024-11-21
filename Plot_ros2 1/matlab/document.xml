@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="title"/><w:jc w:val="left"/></w:pPr><w:r><w:t>Plot effort</w:t></w:r></w:p><w:p><mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><mc:Choice Requires="R2018b"><w:pPr><w:pStyle w:val="heading2"/><w:jc w:val="left"/></w:pPr></mc:Choice><mc:Fallback><w:pPr><w:pStyle w:val="heading"/><w:jc w:val="left"/></w:pPr></mc:Fallback></mc:AlternateContent><w:r><w:rPr><w:b/></w:rPr><w:t>Variable Define</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[path = 'Circular';
+%path = 'Linear';
+
+%time_low = 'Trapezoidal';
+time_low = 'Cubic';
+
+%esercizio = '3';
+esercizio = '4';
+
+
+trjectoryName = [path,' ' , time_low 'Trajectory'];
+fileName = [path, '-', time_low, '-', esercizio , '.png'];
+recName = [path, '-', time_low, '-', esercizio, '.db3'];
+
+
+imgFolderPath = "C:\Users\anton\Desktop\Robotic\Immagini\";
+recFolderPath = "C:\Users\anton\Desktop\Robotic\my_recording\";]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><mc:Choice Requires="R2018b"><w:pPr><w:pStyle w:val="heading2"/><w:jc w:val="left"/></w:pPr></mc:Choice><mc:Fallback><w:pPr><w:pStyle w:val="heading"/><w:jc w:val="left"/></w:pPr></mc:Fallback></mc:AlternateContent><w:r><w:t>File bag loading</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Using ros2bagreader to read .db3 file
+bag = ros2bagreader(fullfile(recFolderPath,recName));
+
+% Disp topics in the bag file
+disp(bag.AvailableTopics)
+
+% Select the topic
+msgs = readMessages(select(bag, 'Topic', '/effort_controller/commands'));]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><mc:Choice Requires="R2018b"><w:pPr><w:pStyle w:val="heading2"/><w:jc w:val="left"/></w:pPr></mc:Choice><mc:Fallback><w:pPr><w:pStyle w:val="heading"/><w:jc w:val="left"/></w:pPr></mc:Fallback></mc:AlternateContent><w:r><w:t>Messages copying</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% Number of messages
+n = numel(msgs);
+
+% Pre-allocate matrix with dimension (# of message x # of joint)
+torqueValues = zeros(n, 7);
+
+% Coping torque value from msgs data traspost
+for i = 1:n
+    torqueValues(i, :) = msgs{i}.data';
+end]]></w:t></w:r></w:p><w:p><w:pPr><w:sectPr/></w:pPr></w:p><w:p><mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><mc:Choice Requires="R2018b"><w:pPr><w:pStyle w:val="heading2"/><w:jc w:val="left"/></w:pPr></mc:Choice><mc:Fallback><w:pPr><w:pStyle w:val="heading"/><w:jc w:val="left"/></w:pPr></mc:Fallback></mc:AlternateContent><w:r><w:t>Data plotting</w:t></w:r></w:p><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[% defining time
+loop_rate = 150/1.5;
+n_of_point = 1:n;
+time = n_of_point/loop_rate;
+
+figure;
+hold on;
+
+for j = 1:7
+    plot(time, torqueValues(:, j), 'DisplayName', ['Torque ' num2str(j)], 'LineWidth', 3);
+end
+
+% Labels
+xlabel('Time');
+ylabel('Torque');
+title([path, ' ', time_low, ' ', esercizio]);
+legend show;  
+grid on;
+hold off;
+saveas(gcf, fullfile(imgFolderPath, fileName))]]></w:t></w:r></w:p></w:body></w:document>
