@@ -276,21 +276,21 @@ class Iiwa_pub_sub : public rclcpp::Node
                     Vector6d cartvel; cartvel << p.vel + 3*error, 0,0,0;
                     
                     //Update joint velocities, using the pseudoinverse of the end-effector Jacobian to map the desired Cartesian velocity (cartvel) in joint space:
-                    joint_velocities_.data = pseudoinverse(robot_->getEEJacobian().data)*cartvel;
+                    dq_des.data = pseudoinverse(robot_->getEEJacobian().data)*cartvel;
 
                     //Calculate the new joint positions by integrating the velocities (joint_velocities_) with the time step dt:
-                    joint_positions_.data = joint_positions_.data + joint_velocities_.data*dt;
+                    q_des.data = joint_positions_.data + joint_velocities_.data*dt;
 
                     //Calculate joint acceleration by discrete numerical derivative:
                     joint_acceleration_d_.data=(joint_velocities_.data-joint_velocity_old.data)/dt;
                     
                     //Use the first method (idCntr) to calculate the required joint torques:
-                    //torque_values = controller_.idCntr(joint_positions_,joint_velocities_,joint_acceleration_d_, _Kp, _Kd);                    
+                    //torque_values = controller_.idCntr(q_des,jdq_des,joint_acceleration_d_, _Kp, _Kd);                    
                     
                     Vector6d cartacc; cartacc << p.acc + 3*error, 0,0,0;
 
-                    desVel = KDL::Twist(KDL::Vector(cartvel[0],cartvel[1], cartvel[2]),KDL::Vector::Zero());
-                    desAcc = KDL::Twist(KDL::Vector(cartacc[0], cartacc[1], cartacc[2]),KDL::Vector::Zero());
+                    desVel = KDL::Twist(KDL::Vector(p.vel[0],p.velvel[1], p.vel[2]),KDL::Vector::Zero());
+                    desAcc = KDL::Twist(KDL::Vector(p.acc[0], p.acc[1], p.acc[2]),KDL::Vector::Zero());
                     desPos.M = desFrame.M;
                     desPos.p = desFrame.p;
                     
@@ -423,6 +423,10 @@ class Iiwa_pub_sub : public rclcpp::Node
         std::string time_law_;
         std::string path_type_;
         KDL::Frame init_cart_pose_;
+        KDL::JntArray q_des;
+        KDL::JntArray dq_des;
+
+
          
         //Gains
         double _Kp = 50 ;  
@@ -430,7 +434,7 @@ class Iiwa_pub_sub : public rclcpp::Node
         double _Kpp ;
         double _Kpo = 50;
         double _Kdp ;      //2*sqrt(_Kpp);
-        double _Kdo = 2*sqrt(_Kpo);
+        double _Kdo = 50;
     
 };
  
