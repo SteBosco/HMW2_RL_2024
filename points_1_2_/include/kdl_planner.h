@@ -34,13 +34,13 @@ public:
     KDLPlanner(double _maxVel, double _maxAcc);
     
     //2a.New constructors KDLPlanner::KDLPlanner 
-    //circolare cubico
+    //circular cubic
     KDLPlanner(double _trajDuration, Eigen::Vector3d _trajInit, double _trajRadius);
-    //circolare trapezoidale
+    //circular trapezoidal
     KDLPlanner(double _trajDuration, double _accDuration, Eigen::Vector3d _trajInit, double _trajRadius);
-    //lineare cubico
+    //linear cubic
     KDLPlanner(double _trajDuration, Eigen::Vector3d _trajInit, Eigen::Vector3d _trajEnd);
-    //lineare trapezoidale
+    //linear trapezoidal
     KDLPlanner(double _trajDuration, double _accDuration,
                Eigen::Vector3d _trajInit, Eigen::Vector3d _trajEnd);
     
